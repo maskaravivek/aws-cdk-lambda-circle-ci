@@ -9,20 +9,16 @@ executors:
     environment:
       AWS_REGION: 'us-west-2'
 jobs:
-  aws-cli-setup:
+  aws-cli-cred-setup:
     executor: aws-cli/default
-    steps:
-      - checkout
-      - aws-cli/setup:
-          profile-name: example
-      - run: echo "Run your code here"
-  build:
-    executor: 'default'
     steps:
       - aws-cli/setup:
           aws-access-key-id: AWS_ACCESS_KEY
           aws-secret-access-key: AWS_ACCESS_SECRET
           aws-region: AWS_REGION_NAME
+  build:
+    executor: 'default'
+    steps:
       - checkout
       - run:
           name: 'build'
@@ -55,3 +51,11 @@ jobs:
             elif [ "${CIRCLE_BRANCH}" == "develop" ]; then
               ENV=stg npm run ci_deploy
             fi 
+workflows:
+  aws-cli:
+    jobs:
+      - aws-cli-cred-setup:
+          context: aws
+  deploy-cdk:
+    jobs:
+      - build
