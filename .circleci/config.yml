@@ -5,7 +5,7 @@ orbs:
 executors:
   default:
     docker:
-      - image: 'circleci/node:14.18.2-buster'
+      - image: 'cimg/node:14.18.2'
     environment:
       AWS_REGION: 'us-west-2'
 jobs:
