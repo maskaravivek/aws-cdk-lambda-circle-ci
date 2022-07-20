@@ -1,16 +1,14 @@
-"use strict"
-
-const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
+const AWS = require('aws-sdk');
 var fs = require('fs');
-const {stringify} = require('csv-stringify');
+const { stringify } = require('csv-stringify/sync');
 AWS.config.update({ region: 'us-west-2' });
 
-var ddb = new AWS.DynamoDB();
 const s3 = new AWS.S3();
+var ddb = new AWS.DynamoDB();
 
-const TABLE_NAME = process.env.TABLE_NAME
 const BUCKET_NAME = process.env.BUCKET_NAME
+const TABLE_NAME = process.env.TABLE_NAME
 
 exports.handler = async function (event) {
     try {
@@ -43,6 +41,22 @@ const generateDataAndUploadToS3 = () => {
     return objectKey
 }
 
+function writeCsvToFileAndUpload(filePath, objectKey) {
+    var data = getCsvData();
+    var output = stringify(data);
+
+    fs.writeFileSync(filePath, output);
+    uploadFile(filePath, objectKey);
+}
+
+function getCsvData() {
+    // return some CSV data
+    return [
+        ['1', '2', '3', '4'],
+        ['a', 'b', 'c', 'd']
+    ];
+}
+
 const uploadFile = (fileName, objectKey) => {
     // Read content from the file
     const fileContent = fs.readFileSync(fileName);
@@ -63,25 +77,3 @@ const uploadFile = (fileName, objectKey) => {
     });
     return objectKey;
 };
-
-function writeCsvToFileAndUpload(filePath, objectKey) {
-    var data = getCsvData()
-    stringify(data, function (err, output) {
-        fs.writeFile(filePath, output);
-    })
-}
-
-function getCsvData() {
-    return {
-        "users": [
-            {
-                "name": "Test 1",
-                "age": "20"
-            },
-            {
-                "name": "Test 2",
-                "age": "24"
-            }
-        ]
-    }
-}
